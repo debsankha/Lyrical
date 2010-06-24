@@ -1,0 +1,1 @@
+This is the code for Lyrical, a program which displays the lyric of the song currently playing in rhythmbox/amarok in a GTK window. I hope to make a debian/ubuntu package someday.

@@ -1,0 +1,3 @@
+Run 'make' and then 'sudo make install'.
+You need to have gcc, pygtk and gnuplot for this
+program to work properly.

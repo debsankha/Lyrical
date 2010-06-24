@@ -1,0 +1,139 @@
+#!/usr/bin/env python
+
+__version__ = "0.3"
+
+__license__ = """
+Hardy-Weinberg Simulation
+Copyright 2007 Abhishek Dasgupta <abhidg@iiserkol.ac.in>,
+Sambit Bikas Pal <sambit@iiserkol.ac.in>
+
+Hardy-Weinberg Simulation is free software; you can redistribute it
+and/or modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 3 of the
+License, or (at your option) any later version.
+
+Hardy-Weinberg Simulation is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+
+import sys,os
+
+try:
+ 	import pygtk
+  	pygtk.require("2.0")
+except:
+  	pass
+try:
+	import gtk
+  	import gtk.glade
+except:
+	sys.exit(1)
+	
+class HardyGame:
+	"""Hardy Weinberg Application"""
+
+	def __init__(self):
+		
+		#Set the Glade file
+		self.gladefile = "/usr/share/hwgame/gui.glade"
+		self.wTree = gtk.glade.XML(self.gladefile) 
+		dic = { "on_pop_value_changed" : self.changed,
+			"on_offspring_value_changed" : self.changed,
+			"on_nog_value_changed" : self.changed,
+			"on_sf_value_changed" : self.changed,
+			"on_about_activate" : self.about,
+			"on_wikip_clicked" : self.wikip,
+			"on_quit_activate" : gtk.main_quit,
+			"on_export-data_activate" : self.savedata,
+			"on_exportdata_clicked" : self.savedata,
+			"on_export-img_activate" : self.savegraph,
+			"on_mainwin_destroy" : gtk.main_quit }
+		self.wTree.signal_autoconnect(dic)
+		self.wTree.get_widget("mainwin").show()
+
+	def savedata(self, action):
+		choose = gtk.FileChooserDialog("Export Data",None,gtk.FILE_CHOOSER_ACTION_SAVE,(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+		choose.set_default_response(gtk.RESPONSE_OK)
+		ans = choose.run()
+		if ans == gtk.RESPONSE_OK:
+			print choose.get_filename()
+			os.spawnvp(os.P_NOWAIT,"cp",["","/tmp/evohw.dat",choose.get_filename()])
+			
+		choose.destroy()
+		
+	def savegraph(self, action):
+		choose = gtk.FileChooserDialog("Export Graph",None,gtk.FILE_CHOOSER_ACTION_SAVE,(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+		choose.set_default_response(gtk.RESPONSE_OK)
+		filter = gtk.FileFilter()
+		filter.set_name("All files")
+		filter.add_pattern("*")
+		choose.add_filter(filter)
+		
+		filter = gtk.FileFilter()
+		filter.set_name("PNG Images")
+		filter.add_mime_type("image/png")
+		filter.add_pattern("*.png")
+		choose.add_filter(filter)
+
+		ans = choose.run()
+		if ans == gtk.RESPONSE_OK:
+			print choose.get_filename()
+			os.spawnvp(os.P_NOWAIT,"cp",["","/tmp/evohw.png",choose.get_filename()])
+			
+		choose.destroy()
+		
+	def wikip(self, widget):
+		os.spawnvp(os.P_NOWAIT,"firefox",["",widget.get_uri()])
+		
+	def changed(self, widget):
+		pop = self.wTree.get_widget("pop").get_value()
+		offspring = self.wTree.get_widget("offspring").get_value()
+		nog = self.wTree.get_widget("nog").get_value()
+		sf = self.wTree.get_widget("sf").get_value()
+
+		if pop % offspring != 0:
+			self.wTree.get_widget("warn").show()
+		else:
+			self.wTree.get_widget("warn").hide()
+		os.spawnvp(os.P_WAIT,"hwevolve",["",str(int(pop)), str(int(offspring)), str(int(nog)), str(sf)])
+		os.spawnvp(os.P_WAIT,"gnuplot",["","/usr/share/hwgame/hwplot.gnu"])
+		self.wTree.get_widget("image1").set_from_file("/tmp/evohw.png")
+		
+	def about(self, action):
+		self.about_dialog = gtk.AboutDialog()
+		try:
+			self.about_dialog.set_transient_for(self.window)
+			self.about_dialog.set_modal(True)
+		except:
+			pass
+		self.about_dialog.set_name('Hardy Weinberg Simulation')
+		self.about_dialog.set_role('about')
+		self.about_dialog.set_version(__version__)
+		commentlabel = 'A simulation of the Hardy-Weinberg Equilibrium model used in evolution'
+		self.about_dialog.set_comments(commentlabel)
+		self.about_dialog.set_license(__license__)
+		self.about_dialog.set_authors(['Abhishek Dasgupta <abhidg@iiserk.edu.ms>\nSambit Bikas Pal <sambit@iiserk.edu.ms>'])
+		self.about_dialog.set_translator_credits('')
+		self.about_dialog.set_website_label("http://abhidg.mine.nu")
+		large_icon = gtk.gdk.pixbuf_new_from_file('/usr/share/pixmaps/hwgame_large.png')
+		self.about_dialog.set_logo(large_icon)
+		# Add button to show keybindings:
+		# Connect to callbacks
+		self.about_dialog.connect('response', self.about_close)
+		self.about_dialog.connect('delete_event', self.about_close)
+		self.about_dialog.show_all()
+	
+	def about_close(self, event, data=None):
+		self.about_dialog.hide()
+		return True
+		
+				
+if __name__ == "__main__":
+	hwg = HardyGame()
+	gtk.main()

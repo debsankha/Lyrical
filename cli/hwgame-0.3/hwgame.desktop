@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=0.2
+Name=Hardy Weinberg Simulation
+GenericName=Simulation Program
+Comment=Simulates the Hardy Weinberg Equilibrium
+Icon=/usr/share/pixmaps/hwgame.png
+Exec=/usr/bin/hwgame
+Path=~
+Terminal=false
+Categories=Science;Biology;
+StartupNotify=true
