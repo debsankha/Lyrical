@@ -37,6 +37,7 @@ class Gui_display:
 		     "on_Next_clicked" : self.next_show,
 		     "on_Prev_clicked" : self.prev_show,
 		     "on_mainwin_destroy" : gtk.main_quit,
+		     "on_mainwin_activate_default" : self.job_for_rhythmbox,
 		     "on_initiation" : self.on_initiation}
 
 		
