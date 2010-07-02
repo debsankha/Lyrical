@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+
+
 from commands import getoutput as get
 from search import GoogleSearch
 from urllib import urlopen
@@ -45,30 +47,25 @@ class Gui_display:
 
 
 	def find_lyric(self,title,artist,num=0):
-		searchstr='''"'''+title+'''"'''+' '+artist+' lyrics -search'
-		gs=GoogleSearch(searchstr)
-	
-		self.result_no=num
-		self.page_no=1
-		gs.results_per_page=10
-	
-		while 1==1:
-			if self.result_no==0:
-				print 'Googling for ',searchstr
-				self.results=gs.get_results()
+		return """
+		# Copyright 2010 Debsankha Manik
+# E-mail: deb5890@gmail.com
+# Website: http://debsankha-manik.appspot.com
 
-			try:
-				lyric=getlyric(self.results[self.result_no].encode('utf8'))
-			except IndexError:
-				self.set_lyric("Sorry, lyric not found")
-				return ''
-			
-			if lyric=='':
-				self.result_no+=1
-			else :
-				self.result_no+=1
-				return lyric
-	
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+
 	def set_lyric(self,text):
 		text=re.sub("(<[^>]*>)+(\n)+","\n",text)
 		text=re.sub("(<[^>]*>)+",'',text)
@@ -83,10 +80,9 @@ class Gui_display:
 		table.add(italicTag)
 		iter = buffertext.get_iter_at_offset(0)
 		buffertext.insert_with_tags_by_name(iter,self.title,'Bold')
-		buffertext.insert_with_tags_by_name(iter,'\nby '+self.artist+'\n','Italic')
+		buffertext.insert_with_tags_by_name(iter,'by '+self.artist,'Italic')
 		self.wTree.get_widget("lyric_box").set_buffer(buffertext)
 
-		
 
 	def on_changed(self,*args, **kwargs):
 		self.last_used=self.wTree.get_widget("combobox1").get_active_text()

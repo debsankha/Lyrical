@@ -1,9 +1,11 @@
+#!/usr/bin/python
 import os
 from commands import getoutput as get
 from search import GoogleSearch
 from urllib import urlopen
 import user
 import re
+# the algorithm here doesn't allow any tag except <p> or <br> inside lyrics
 
 def xmlcorrect(page):
 	'''replacing invalid xml characters'''
@@ -36,7 +38,9 @@ def getlyric(url):
 		print 'The website is not accessible'
 		return '<lyric>The website could not be accessed. Check your internet connection and retry</lyric>'
 
+	print "reading page"
 	page=f.read()
+	print "read the page"
 	pre_tags=re.findall("(<pre>|<PRE>)([^<]*)(</pre>|</PRE>)",page)
 	if pre_tags!=[]:
 		print "got pre tags"
@@ -66,7 +70,7 @@ def getlyric(url):
 		loc=page.find('<br')
 		difflist.append(loc)
 		if loc!=-1:
-			if re.search("<(div|DIV|tr|TR)[^>]*>",page[:loc-1])!=None:
+			if re.search("<(?!(br|p|/p))[^>]*>",page[:loc-1])!=None:
 				tentative=omitted+loc
 				page=page[loc+3:]
 				omitted+=loc+3
@@ -113,7 +117,6 @@ def getlyric(url):
 			start=page2.rfind('>',0,biggest_cluster[0])
 			end=page2.find('<',biggest_cluster[-1]+1,len(page2))
 			lyric=page2[start+1:end]
-			print lyric
 			return lyric
 		else :
 			print "max(lenly)<7, most probably not a lyric. exiting.."

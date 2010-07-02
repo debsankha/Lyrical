@@ -24,6 +24,7 @@ def main(*args, **kwargs):
 	gs.results_per_page=10
 
 	results=gs.get_results()
+	print "got results", results
 
 #	try:
 #		results=gs.get_results()
@@ -32,7 +33,7 @@ def main(*args, **kwargs):
 #		return ''
 
 	for res in results:
-		lyric=getlyric(res.url.encode('utf8'),title)
+		lyric=getlyric(res.encode('utf8'))
 		if lyric=='':
 			pass
 		else :

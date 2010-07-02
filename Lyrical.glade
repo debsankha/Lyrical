@@ -1,84 +1,87 @@
 <?xml version="1.0"?>
-<interface>
-  <requires lib="gtk+" version="2.16"/>
+<glade-interface>
+  <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy project-wide -->
-  <object class="GtkWindow" id="lyricbox">
+  <widget class="GtkWindow" id="mainwin">
+    <property name="width_request">350</property>
+    <property name="height_request">500</property>
+    <signal name="destroy" handler="on_mainwin_destroy"/>
     <child>
-      <object class="GtkVBox" id="vbox1">
+      <widget class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">5</property>
         <child>
-          <object class="GtkTextView" id="lyric">
+          <widget class="GtkScrolledWindow" id="scrolledwindow1">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-          </object>
+            <child>
+              <widget class="GtkTextView" id="lyric_box">
+                <property name="width_request">200</property>
+                <property name="height_request">300</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="editable">False</property>
+                <property name="wrap_mode">word-char</property>
+                <property name="justification">center</property>
+                <property name="left_margin">10</property>
+                <property name="right_margin">10</property>
+                <property name="cursor_visible">False</property>
+              </widget>
+            </child>
+          </widget>
           <packing>
             <property name="position">0</property>
           </packing>
         </child>
         <child>
-          <object class="GtkHBox" id="hbox1">
+          <widget class="GtkHBox" id="hbox1">
             <property name="visible">True</property>
             <child>
-              <object class="GtkComboBox" id="player">
-                <property name="visible">True</property>
-                <property name="tooltip_text" translatable="yes">Select your music player here and watch the lyrics go by!</property>
-                <signal name="changed" handler="on_player_changed"/>
-              </object>
-              <packing>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="prev">
+              <widget class="GtkButton" id="Previous">
                 <property name="label">gtk-media-previous</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <signal name="activate" handler="on_prev_activate"/>
-              </object>
+                <signal name="clicked" handler="on_Prev_clicked"/>
+              </widget>
               <packing>
                 <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkComboBox" id="combobox1">
+                <property name="visible">True</property>
+                <property name="items" translatable="yes"></property>
+                <signal name="changed" handler="on_combobox1_changed" after="yes"/>
+              </widget>
+              <packing>
                 <property name="position">1</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="next">
+              <widget class="GtkButton" id="Next">
                 <property name="label">gtk-media-next</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-              </object>
+                <signal name="clicked" handler="on_Next_clicked"/>
+              </widget>
               <packing>
                 <property name="expand">False</property>
                 <property name="position">2</property>
               </packing>
             </child>
-            <child>
-              <object class="GtkButton" id="about">
-                <property name="label">gtk-about</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="position">3</property>
-              </packing>
-            </child>
-          </object>
+          </widget>
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="pack_type">end</property>
             <property name="position">1</property>
           </packing>
         </child>
-      </object>
+      </widget>
     </child>
-  </object>
-</interface>
+  </widget>
+</glade-interface>
