@@ -36,16 +36,27 @@ def getlyric(url):
 		print 'The website is not accessible'
 		return '<lyric>The website could not be accessed. Check your internet connection and retry</lyric>'
 
-	page=f.read()
-	pre_tags=re.findall("(<pre>|<PRE>)([^<]*)(</pre>|</PRE>)",page)
+	page0=f.read()
+	page=''			
+	for i in page0:			#getting rid of those non-ascii characters
+		try:
+			page+=i.encode("ascii")
+		except:
+			pass
+
+	temp=open('./pages/'+('').join(url.split('/')),'w')
+	temp.write(page)
+	temp.close()
+
+	pre_tags=re.findall("(<pre>|<PRE>)(?#starting tag)(?s)(?#dotall)(.*?)(?#content)(</pre>|</PRE>)(?#closing tag)",page)  
 	if pre_tags!=[]:
 		print "got pre tags"
 		contents=[tag[1] for tag in pre_tags]
 		contents.sort(cmp=bylength)
-		if (contents[-1]).count('\n')>7:
-			return contents[-1]
+		if (contents[-1]).count('\n')>7:			# if the longest one is < 7 lines, drop them
+			return contents[-1].encode('ascii','ignore')
 		else :
-			print "contents of pre tag is too low"
+			print "contents of pre tag too little"
 			pass
 	else :
 		print "No pre tag found"
@@ -115,6 +126,7 @@ def getlyric(url):
 			lyric=page2[start+1:end]
 			print lyric
 			return lyric
+
 		else :
 			print "max(lenly)<7, most probably not a lyric. exiting.."
 			return ''

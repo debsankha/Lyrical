@@ -10,7 +10,7 @@ class GoogleSearch:
 	
 	def get_results(self):
 		query = urllib.urlencode([('q',self.searchstr)])
-		url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&%s"%query
+		url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&rsz=8&%s"%query
 		urllib._urlopener = AppURLopener()
 		search_results = urllib.urlopen(url)
 		json = simplejson.loads(search_results.read())

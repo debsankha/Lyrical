@@ -45,34 +45,49 @@ class Gui_display:
 		self.wTree.get_widget("mainwin").show()
 
 
-	def find_lyric(self,title,artist,num=0):
-		searchstr='''"'''+title+'''"'''+' '+artist+' lyrics -search'
-		gs=GoogleSearch(searchstr)
-	
-		self.result_no=num
-		self.page_no=1
-		gs.results_per_page=10
-	
-		while 1==1:
-			if self.result_no==0:
-				print 'Googling for ',searchstr
-				self.results=gs.get_results()
+	def find_lyric(self,title,artist,is_first=False,is_next=False,is_prev=False):
+		if is_first==True:
+			self.result_no=-1
+			self.all_lyrics=[]
+			searchstr='''"'''+title+'''"'''+' '+artist+' lyrics -search'
+			gs=GoogleSearch(searchstr)
+			print 'Googling for ',searchstr
+			self.results=gs.get_results()
+			print "the search results are: "
+			for i in self.results:
+				print i
 
-			try:
-				lyric=getlyric(self.results[self.result_no].encode('utf8'))
-			except IndexError:
-				self.set_lyric("Sorry, lyric not found")
-				return ''
-			
+		if is_prev==True:
+			if self.result_no>=1:
+				self.result_no-=1
+				print "returning the lyric no %d"%self.result_no
+				return self.all_lyrics[self.result_no]
+			else:
+				return "This is the first one"
+		
+		if is_next==True:
+			if len(self.all_lyrics)>self.result_no+1:
+				self.result_no+=1
+				return self.all_lyrics[self.result_no]
+
+		while self.result_no+1<len(self.results):
+			self.result_no+=1
+			lyric=getlyric(self.results[self.result_no].encode('utf8'))
+			self.all_lyrics.append(lyric)
+		
 			if lyric=='':
-				self.result_no+=1
+				pass
 			else :
-				self.result_no+=1
+				print "result_no is %d"%self.result_no
 				return lyric
+		else:
+			return "this is the last lyric I could find"
 	
 	def set_lyric(self,text):
+		text=re.sub("(<br|BR)([^>]*?)(>)","\n",text)
 		text=re.sub("(<[^>]*>)+(\n)+","\n",text)
 		text=re.sub("(<[^>]*>)+",'',text)
+		text=re.sub("(\n)+(\s)*",'\n',text)
 		buffertext=gtk.TextBuffer()
 		buffertext.set_text(text)
 		boldTag=gtk.TextTag("Bold")
@@ -91,12 +106,10 @@ class Gui_display:
 
 	def on_changed(self,*args, **kwargs):
 		self.last_used=self.wTree.get_widget("combobox1").get_active_text()
-		self.result_no=0
-		self.page_no=1
 		self.update_for_rhythmbox()
 
 	def next_show(self,*args, **kwargs):
-		lyric=self.find_lyric(self.title,self.artist,num=self.result_no+1)
+		lyric=self.find_lyric(self.title,self.artist,is_next=True)
 		self.set_lyric(lyric)
 		self.bus.add_signal_receiver(self.job_for_rhythmbox,dbus_interface="org.gnome.Rhythmbox.Player",signal_name="playingChanged")
 		loop=gobject.MainLoop()
@@ -104,7 +117,14 @@ class Gui_display:
 		loop.run()
 	
 	def prev_show(self,*args, **kwargs):
-		self.set_lyric(self.oldlyric)
+		print " showing prev"
+		lyric=self.find_lyric(self.title,self.artist,is_prev=True)
+		self.set_lyric(lyric)
+		self.bus.add_signal_receiver(self.job_for_rhythmbox,dbus_interface="org.gnome.Rhythmbox.Player",signal_name="playingChanged")
+		loop=gobject.MainLoop()
+		print 'starting gobject.MainLoop()'
+		loop.run()
+
 
 	def on_initiation(self,*args, **kwargs):
 		if self.last_used=='Rhythmbox':
@@ -130,7 +150,7 @@ class Gui_display:
 			print 'No song is playing right now'
 			return ''
 		self.title=str(rhythmshell.getSongProperties(rhythm.getPlayingUri())['title'])
-		lyric=self.find_lyric(self.title,self.artist)
+		lyric=self.find_lyric(self.title,self.artist,is_first=True)
 		self.oldlyric=lyric
 		self.set_lyric(lyric)
 	
