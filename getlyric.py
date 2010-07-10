@@ -44,9 +44,9 @@ def getlyric(url):
 		except:
 			pass
 
-	temp=open('./pages/'+('').join(url.split('/')),'w')
-	temp.write(page)
-	temp.close()
+#	temp=open('./pages/'+('').join(url.split('/')),'w')
+#	temp.write(page)
+#	temp.close()
 
 	pre_tags=re.findall("(<pre>|<PRE>)(?#starting tag)(?s)(?#dotall)(.*?)(?#content)(</pre>|</PRE>)(?#closing tag)",page)  
 	if pre_tags!=[]:
