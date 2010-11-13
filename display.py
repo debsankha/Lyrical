@@ -18,6 +18,7 @@ try:
 except:
 	sys.exit(1)
 
+
 class Gui_display:
 	global GoogleSearch
 	def __init__(self):
@@ -34,12 +35,7 @@ class Gui_display:
 
 		
 		dic={"on_combobox1_changed" : self.on_changed,
-		     "on_Next_clicked" : self.next_show,
-		     "on_Prev_clicked" : self.prev_show,
-		     "on_mainwin_destroy" : gtk.main_quit,
-		     "on_mainwin_activate_default" : self.job_for_rhythmbox,
-		     "on_initiation" : self.on_initiation}
-
+		     "on_mainwin_destroy" : gtk.main_quit}
 		
 		self.wTree.signal_autoconnect(dic)
 		self.wTree.get_widget("mainwin").show()
@@ -83,7 +79,7 @@ class Gui_display:
 		else:
 			return "this is the last lyric I could find"
 	
-	def set_lyric(self,text):
+	def set_lyric(self,text,title,artist):
 		text=re.sub("(<br|BR)([^>]*?)(>)","\n",text)
 		text=re.sub("(<[^>]*>)+(\n)+","\n",text)
 		text=re.sub("(<[^>]*>)+",'',text)
@@ -98,29 +94,49 @@ class Gui_display:
 		table.add(boldTag)
 		table.add(italicTag)
 		iter = buffertext.get_iter_at_offset(0)
-		buffertext.insert_with_tags_by_name(iter,self.title,'Bold')
-		buffertext.insert_with_tags_by_name(iter,'\nby '+self.artist+'\n','Italic')
+		buffertext.insert_with_tags_by_name(iter,title,'Bold')
+		buffertext.insert_with_tags_by_name(iter,'\nby '+artist+'\n','Italic')
 		self.wTree.get_widget("lyric_box").set_buffer(buffertext)
 
 		
 
 	def on_changed(self,*args, **kwargs):
-		self.last_used=self.wTree.get_widget("combobox1").get_active_text()
-		self.update_for_rhythmbox()
+#		self.last_used=self.wTree.get_widget("combobox1").get_active_text()
+#		self.update_for_rhythmbox()
+		Rhythmbox_init(self)
+
+	
+class Rhythmbox_init:
+	def __init__(self,instance):
+		self.inst=instance
+		dic2={
+				"on_Next_clicked" : self.next_show,
+				"on_Prev_clicked" : self.prev_show,
+				"on_mainwin_activate_default" : self.job_for_rhythmbox,
+				"on_combobox1_changed" : self.inst.on_changed,
+				"on_mainwin_destroy" : gtk.main_quit,
+				"on_initiation" : self.on_initiation,
+				}
+		
+		self.inst.wTree.signal_autoconnect(dic2)
+
+		self.job_for_rhythmbox()
+
+
 
 	def next_show(self,*args, **kwargs):
-		lyric=self.find_lyric(self.title,self.artist,is_next=True)
-		self.set_lyric(lyric)
-		self.bus.add_signal_receiver(self.job_for_rhythmbox,dbus_interface="org.gnome.Rhythmbox.Player",signal_name="playingChanged")
+		lyric=self.inst.find_lyric(self.title,self.artist,is_next=True)
+		self.inst.set_lyric(lyric,self.title,self.artist)
+		self.inst.bus.add_signal_receiver(self.job_for_rhythmbox,dbus_interface="org.gnome.Rhythmbox.Player",signal_name="playingChanged")
 		loop=gobject.MainLoop()
 		print 'starting gobject.MainLoop()'
 		loop.run()
 	
 	def prev_show(self,*args, **kwargs):
 		print " showing prev"
-		lyric=self.find_lyric(self.title,self.artist,is_prev=True)
-		self.set_lyric(lyric)
-		self.bus.add_signal_receiver(self.job_for_rhythmbox,dbus_interface="org.gnome.Rhythmbox.Player",signal_name="playingChanged")
+		lyric=self.inst.find_lyric(self.title,self.artist,is_prev=True)
+		self.inst.set_lyric(lyric,self.title,self.artist)
+		self.inst.bus.add_signal_receiver(self.job_for_rhythmbox,dbus_interface="org.gnome.Rhythmbox.Player",signal_name="playingChanged")
 		loop=gobject.MainLoop()
 		print 'starting gobject.MainLoop()'
 		loop.run()
@@ -140,8 +156,8 @@ class Gui_display:
 	
 
 	def job_for_rhythmbox(self,*args, **kwargs):
-		rhythm_obj=self.bus.get_object("org.gnome.Rhythmbox", "/org/gnome/Rhythmbox/Player")
-		rhythmshell_obj=self.bus.get_object("org.gnome.Rhythmbox", "/org/gnome/Rhythmbox/Shell")
+		rhythm_obj=self.inst.bus.get_object("org.gnome.Rhythmbox", "/org/gnome/Rhythmbox/Player")
+		rhythmshell_obj=self.inst.bus.get_object("org.gnome.Rhythmbox", "/org/gnome/Rhythmbox/Shell")
 		rhythm=dbus.Interface(rhythm_obj, "org.gnome.Rhythmbox.Player")
 		rhythmshell=dbus.Interface(rhythmshell_obj, "org.gnome.Rhythmbox.Shell")	
 		try:
@@ -150,17 +166,19 @@ class Gui_display:
 			print 'No song is playing right now'
 			return ''
 		self.title=str(rhythmshell.getSongProperties(rhythm.getPlayingUri())['title'])
-		lyric=self.find_lyric(self.title,self.artist,is_first=True)
+		lyric=self.inst.find_lyric(self.title,self.artist,is_first=True)
 		self.oldlyric=lyric
-		self.set_lyric(lyric)
+		self.inst.set_lyric(lyric,self.title,self.artist)
 	
 	def update_for_rhythmbox(self,*args,**kwargs):
 		print "showing_for_rhythmbox"
 		self.job_for_rhythmbox()
-		self.bus.add_signal_receiver(self.job_for_rhythmbox,dbus_interface="org.gnome.Rhythmbox.Player",signal_name="playingChanged")
+		self.inst.bus.add_signal_receiver(self.job_for_rhythmbox,dbus_interface="org.gnome.Rhythmbox.Player",signal_name="playingChanged")
 		loop=gobject.MainLoop()
 		print 'starting gobject.MainLoop()'
 		loop.run()
+
+
 
 	
 
